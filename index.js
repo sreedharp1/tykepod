@@ -20,7 +20,7 @@ const languageStrings = {
         translation: {
             SKILL_NAME: 'Tyke POD - NASA\'s Astronomy Picture of the Day',
             GET_FACT_MESSAGE: "Here is the Astronomy picture of the day from NASA, ",
-            HELP_MESSAGE: 'Welcome to Tyke POD!! To use this skill, you can say, Tyke POD to Deetya or Tyke POD Havisha. Please start over.',
+            HELP_MESSAGE: 'Welcome to Tyke POD!! To use this skill, you can say something like, Open Tyke POD for John.',
             // HELP_REPROMPT: 'What can I help you with?',
             STOP_MESSAGE: 'Goodbye!',
         },
@@ -29,7 +29,7 @@ const languageStrings = {
         translation: {
             SKILL_NAME: 'Tyke POD - NASA\'s Astronomy Picture of the Day',
             GET_FACT_MESSAGE: "Here is the Astronomy picture of the day from NASA, ",
-            HELP_MESSAGE: 'Welcome to Tyke POD!! To use this skill, you can say, Tyke POD to Deetya or Tyke POD Havisha. Please start over.',
+            HELP_MESSAGE: 'Welcome to Tyke POD!! To use this skill, you can say something like, Open Tyke POD for John.',
             // HELP_REPROMPT: 'What can I help you with?',
             STOP_MESSAGE: 'Goodbye!',
         },
@@ -47,8 +47,12 @@ const handlers = {
         // Get a random space fact from the space facts list
         // Use this.t() to get corresponding language data
         console.log(this.event.request.intent);
+        var kidName='';
         if(this.event.request.intent === undefined ){
-            this.emit('AMAZON.HelpIntent');
+            console.log("No Kid Name provided.");
+            //return;
+        }else{
+            kidName = this.event.request.intent.slots.kidsName.value;
         }
         var options = {
             host: 'api.nasa.gov',
@@ -56,7 +60,7 @@ const handlers = {
             path: '/planetary/apod?api_key=hTII0m6T0Kst0VReHN0CjCytPMMMyyqtNCmy5SHc',
             method: 'GET'
         };
-        var kidName = this.event.request.intent.slots.kidsName.value;
+
         console.log ("Kids Name received:"+kidName);
         httpsGet(options,kidName, (myResult) => {
                 console.log("sent     : " + options);
@@ -72,7 +76,7 @@ const handlers = {
                     largeImageUrl: myResult.url
                 };
                 const speechOutput = "Hello " + kidName + ", " + this.t('GET_FACT_MESSAGE') + apodMessage;
-                this.emit(':tellWithCard', speechOutput, myResult.title, apodMessage,imageObj);
+                this.emit(':tellWithCard', speechOutput, "NASA Astronomy Picture of the Day",  myResult.title+": "+apodMessage+ "\r\n Photo Credit: "+myResult.copyright+ "\r\n",imageObj);
 
             }
         );
@@ -80,7 +84,7 @@ const handlers = {
     'AMAZON.HelpIntent': function () {
         const speechOutput = this.t('HELP_MESSAGE');
         const reprompt = this.t('HELP_MESSAGE');
-        this.emit(':tell', speechOutput);
+        this.emit(':tellWithCard', speechOutput, this.t('SKILL_NAME'));
     },
     'AMAZON.CancelIntent': function () {
         this.emit(':tell', this.t('STOP_MESSAGE'));
