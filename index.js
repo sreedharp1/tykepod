@@ -12,6 +12,7 @@
 
 const Alexa = require('alexa-sdk');
 const https = require('https');
+const URL= require('url');
 
 const APP_ID = "amzn1.ask.skill.195f5324-0677-43f3-a88b-45ed044474ac";
 
@@ -70,13 +71,36 @@ const handlers = {
                 if(undefined === myResult.kidName){
                     kidName = "Tyke";
                 }
+                // const proxyURL = "https://d2t5ipn278q5vi.cloudfront.net";
                 var apodMessage= myResult.explanation;
+                // var imageUrl = URL.parse('https://apod.nasa.gov/apod/image/1707/aurora_iss052e007857_1024.jpg');
+                var imageUrl= URL.parse(myResult.url);
+                //imageUrl=imageUrl.slice(imageUrl.indexof("/", 8));
+                console.log(imageUrl);
+               // var imagePath = "https://d2t5ipn278q5vi.cloudfront.net"+imageUrl.pathname;
+                var imagePath = "https://2u3v1dwfg0.execute-api.us-east-1.amazonaws.com/live";
+                console.log((imageUrl.hostname).indexOf("youtube"));
+                if((imageUrl.hostname).indexOf("youtube") == -1){
+                     imagePath = imagePath+imageUrl.pathname;
+                }else{
+                    var str = imageUrl.pathname;
+                    var n = str.lastIndexOf("/");
+                    str=str.substring(n);
+                    imagePath = "https://mynhunxmm7.execute-api.us-east-1.amazonaws.com/live"+str;
+                }
+
+                //var proxyImageURL = new URL (imagePath);
+                console.log("Image Path:"+imagePath);
                 var imageObj = {
-                    smallImageUrl: myResult.url,
-                    largeImageUrl: myResult.url
+                    smallImageUrl: imagePath,
+                    largeImageUrl: imagePath
                 };
+                var photoCredit=myResult.copyright;
+                if(undefined===photoCredit){
+                    photoCredit="NASA";
+                }
                 const speechOutput = "Hello " + kidName + ", " + this.t('GET_FACT_MESSAGE') + apodMessage;
-                this.emit(':tellWithCard', speechOutput, "NASA Astronomy Picture of the Day",  myResult.title+": "+apodMessage+ "\r\n Photo Credit: "+myResult.copyright+ "\r\n",imageObj);
+                this.emit(':tellWithCard', speechOutput, "NASA Astronomy Picture of the Day",  myResult.title+": "+apodMessage+ "\r\n Photo Credit: "+photoCredit+ "\r\n",imageObj);
 
             }
         );
